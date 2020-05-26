@@ -32,6 +32,11 @@ let UnimportantProds = [
 	'money'     // Münzen
 ];
 
+FoEproxy.addHandler('ArmyUnitManagementService', 'getArmyInfo', (data, postData) => {
+	$('#ResultBox').remove();
+});
+
+
 /**
  *
  * @type {{data: {}, CityEntities: [], ShowFunction: Reader.ShowFunction, OtherPlayersBuildings: Reader.OtherPlayersBuildings, player_name: string, showResult: Reader.showResult}}
@@ -41,18 +46,22 @@ let Reader = {
 	data: {},
 	player_name: '',
 	CityEntities: [],
-
+	ArmyBoosts: [],
+	IsPlunderable: false,
+	
 	/**
 	 * Die Gebäude ermitteln
 	 *
 	 * @param dp
 	 */
-	OtherPlayersBuildings: (dp) => {
+	OtherPlayersBuildings: (dp, IsPlunderable) => {
 
 		Reader.data = {
 			ready: [],
 			work: []
 		};
+
+		Reader.IsPlunderable = IsPlunderable;
 
 		// Werte des letzten Nachbarn löschen
 		CityMap.CityData = null;
@@ -65,10 +74,55 @@ let Reader = {
 
         Reader.CityEntities = d;      
 
+		let BoostDict = [];
         for (let i in d) {
-            if (d.hasOwnProperty(i)) {
-                let id = d[i]['cityentity_id'];
-                
+			if (d.hasOwnProperty(i)) {
+			let id = d[i]['cityentity_id'];
+
+			if (d[i]['bonus'] !== undefined) {
+				let BoostType = d[i]['bonus']['type'];
+				let BoostValue = d[i]['bonus']['value'];
+				if (BoostType !== undefined && BoostValue !== undefined) {
+					BoostDict[BoostType] |= 0;
+					BoostDict[BoostType] += BoostValue;
+					//if (BoostType === 'att_boost_attacker' || BoostType === 'military_boost' || BoostType === 'advanced_tactics') { // || BoostType === 'def_boost_attacker' || BoostType === 'att_boost_defender' || BoostType === 'def_boost_defender') {
+					//	console.log(BuildingNamesi18n[id].name + ' ' + BoostType + '_ ' + BoostValue + '%');
+					//}
+				}
+			}
+
+			let BuildingData = MainParser.CityEntities[BuildingNamesi18n[id].index];
+			if (d[i]['state'] !== undefined && d[i]['state']['__class__'] !== 'ConstructionState' && d[i]['state']['__class__'] !== 'UnconnectedState') {
+				if (BuildingData['abilities'] !== undefined) {
+					for (let ability in BuildingData['abilities']) {
+						if (!BuildingData['abilities'].hasOwnProperty(ability)) continue;
+							let CurrentAbility = BuildingData['abilities'][ability];
+						if (CurrentAbility['boostHints'] !== undefined) {
+							for (let boostHint in CurrentAbility['boostHints']) {
+								if (!CurrentAbility['boostHints'].hasOwnProperty(boostHint)) continue;
+
+								let CurrentBoostHint = CurrentAbility['boostHints'][boostHint];
+								Reader.HandleBoostEraMap(BoostDict, CurrentBoostHint['boostHintEraMap'], d[i]);
+							}
+						}
+
+						if (CurrentAbility['bonuses'] !== undefined) {
+							for (let bonus in CurrentAbility['bonuses']) {
+								if (!CurrentAbility['bonuses'].hasOwnProperty(bonus)) continue;
+
+								let CurrentBonus = CurrentAbility['bonuses'][bonus];
+								Reader.HandleBoostEraMap(BoostDict, CurrentBonus['boost'], d[i]);
+							}
+						}
+
+						if (CurrentAbility['bonusGiven'] !== undefined) {
+							let CurrentBonus = CurrentAbility['bonusGiven'];
+							Reader.HandleBoostEraMap(BoostDict, CurrentBonus['boost'], d[i]);
+                           }
+                       }
+					}
+				}
+				                
                 if (BlackListBuildingsArray.includes(id) === false && BlackListBuildingsString.indexOf(id.substring(0, id.length-1)) === -1) {
                     if (d[i]['state'] !== undefined && d[i]['state']['current_product'] !== undefined) {
                         if (d[i]['type'] === 'goods') {
@@ -80,17 +134,46 @@ let Reader = {
                     }
                 }
             }
-        }
+		}
+
+		Reader.ArmyBoosts = Unit.GetBoostSums(BoostDict);
 
 		Reader.showResult();
 	},
 
 
 	/**
+	 * Boosts aus einer Era Map suchen und das BoostDict aktualisieren
+	 * */
+	HandleBoostEraMap: (BoostDict, BoostEraMap, Building) => {
+		if (BoostEraMap === undefined) return;
+
+		for (let EraName in BoostEraMap) {
+			if (!BoostEraMap.hasOwnProperty(EraName)) continue;
+
+			let EraBoosts = BoostEraMap[EraName];
+			let BuildingEraName = Building['level'] !== undefined ? Technologies.EraNames[Building['level'] + 1] : undefined;
+
+			if (EraName === 'AllAge' || EraName === BuildingEraName) {
+				let BoostType = EraBoosts['type'];
+				let BoostValue = EraBoosts['value'];
+
+				if (BoostType !== undefined && BoostValue !== undefined) {
+					BoostDict[BoostType] |= 0;
+					BoostDict[BoostType] += BoostValue;
+					//if (BoostType === 'att_boost_attacker' || BoostType === 'military_boost' || BoostType === 'advanced_tactics') {
+					//	console.log(BuildingNamesi18n[Building['cityentity_id']].name + ' ' + BoostType + '_ ' + BoostValue + '%');
+					//}
+				}
+			}
+		}
+    },
+
+
+	/**
 	 *  HTML Box anzeigen
 	 */
 	showResult: () => {
-
 		// let d = helper.arr.multisort(Reader.data, ['name'], ['ASC']);
 		let rd = helper.arr.multisort(Reader.data.ready, ['name'], ['ASC']);
 		rd = helper.arr.multisort(rd, ['isImportant'], ['DESC']);
@@ -102,7 +185,7 @@ let Reader = {
 		if ($('#ResultBox').length === 0) {
 			HTML.Box({
 				'id': 'ResultBox',
-				'title': i18n('Boxes.Neighbors.Title') + '<em>' + Reader.player_name + '</em>',
+				'title': '<em>' + Reader.player_name + '</em>',
 				'auto_close': true,
 				'dragdrop': true,
 				'minimize': true
@@ -114,67 +197,75 @@ let Reader = {
 
 		let div = $('#ResultBox'),
 			h = [];
+        const boosts = Reader.ArmyBoosts;
+        h.push(`
+<div style="margin: 3px 5px">
+${HTML.i18nReplacer(i18n('Boxes.Neighbors.AttackingArmy'), {
+   attatt: `<b>${boosts.AttackAttackBoost}</b>`,
+   attdef: `<b>${boosts.AttackDefenseBoost}</b>`
+})}
+<br />
+${HTML.i18nReplacer(i18n('Boxes.Neighbors.DefendingArmy'), {
+    defatt: `<b>${boosts.DefenseAttackBoost}</b>`,
+    defdef: `<b>${boosts.DefenseDefenseBoost}</b>`})}
+</div>
+`)
 
+		if (Reader.IsPlunderable) {
+			if (rd.length > 0) {
+				h.push('<table class="foe-table" style="margin-bottom: 15px">');
 
-		if (rd.length > 0) {
+				h.push('<thead>');
 
-			h.push('<table class="foe-table" style="margin-bottom: 15px">');
+				h.push('<tr>');
+				h.push('<th colspan="3"><strong>' + i18n('Boxes.Neighbors.ReadyProductions') + '</strong></th>');
+				h.push('</tr>');
 
-			h.push('<thead>');
+				h.push('</thead>');
+				h.push('<tbody>');
 
-			h.push('<tr>');
-			h.push('<th colspan="3"><strong>' + i18n('Boxes.Neighbors.ReadyProductions') + '</strong></th>');
-			h.push('</tr>');
-
-			h.push('</thead>');
-			h.push('<tbody>');
-
-			for (let i in rd) {
-				if (rd.hasOwnProperty(i)) {
-					h.push('<tr class="success">');
-					h.push('<td>' + rd[i]['name'] + '</td>');
-					h.push('<td>' + rd[i]['amount'] + '</td>');
-					h.push('<td><span class="show-entity" data-id="' + rd[i]['id'] + '"><img class="game-cursor" src="' + extUrl + 'css/images/open-eye.png"></span></td>');
-					h.push('</tr>');
+				for (let i in rd) {
+					if (rd.hasOwnProperty(i)) {
+						h.push('<tr class="success">');
+						h.push('<td>' + rd[i]['name'] + '</td>');
+						h.push('<td>' + rd[i]['amount'] + '</td>');
+						h.push('<td><span class="show-entity" data-id="' + rd[i]['id'] + '"><img class="game-cursor" src="' + extUrl + 'css/images/open-eye.png"></span></td>');
+						h.push('</tr>');
+					}
 				}
+
+				h.push('</tbody>');
+				h.push('</table>');
 			}
 
-			h.push('</tbody>');
-			h.push('</table>');
-		}
+			if (wk.length > 0) {
 
+				h.push('<table class="foe-table">');
 
-		if (wk.length > 0) {
+				h.push('<thead>');
 
-			h.push('<table class="foe-table">');
+				h.push('<tr>');
+				h.push('<th colspan="3"><strong>' + i18n('Boxes.Neighbors.OngoingProductions') + '</strong></th>');
+				h.push('</tr>');
 
-			h.push('<thead>');
+				h.push('</thead>');
+				h.push('<tbody>');
 
-			h.push('<tr>');
-			h.push('<th colspan="3"><strong>' + i18n('Boxes.Neighbors.OngoingProductions') + '</strong></th>');
-			h.push('</tr>');
-
-			h.push('</thead>');
-			h.push('<tbody>');
-
-			for (let i in wk) {
-				if (wk.hasOwnProperty(i)) {
-					h.push('<tr>');
-					h.push('<td>' + wk[i]['name'] + '</td>');
-					h.push('<td>' + wk[i]['amount'] + '</td>');
-					h.push('<td><span class="show-entity" data-id="' + wk[i]['id'] + '"><img class="game-cursor" src="' + extUrl + 'css/images/open-eye.png"></span></td>');
-					h.push('</tr>');
+				for (let i in wk) {
+					if (wk.hasOwnProperty(i)) {
+						h.push('<tr>');
+						h.push('<td>' + wk[i]['name'] + '</td>');
+						h.push('<td>' + wk[i]['amount'] + '</td>');
+						h.push('<td><span class="show-entity" data-id="' + wk[i]['id'] + '"><img class="game-cursor" src="' + extUrl + 'css/images/open-eye.png"></span></td>');
+						h.push('</tr>');
+					}
 				}
+
+				h.push('</tbody>');
+				h.push('</table>');
 			}
-
-			h.push('</tbody>');
-			h.push('</table>');
 		}
-
-		if (rd.length === 0 && wk.length === 0) {
-			h.push('<strong>' + i18n('Boxes.Neighbors.NothingToPlunder') + '</strong>');
-		}
-
+		
 		div.find('#ResultBoxBody').html(h.join(''));
 		div.show();
 
@@ -304,7 +395,7 @@ let GoodsParser = {
 
 					} else {
 						if (isImportant)
-							g.push(a[k] + ' ' + GoodsData[k]['name'] + ' (' + (ResourceStock[k] !== undefined ? ResourceStock[k] : 0) + ')');
+							g.push(a[k] + ' ' + GoodsData[k]['name'] + ' (' + (ResourceStock[k] !== undefined && ResourceStock[k] !== 0 ? HTML.Format(ResourceStock[k]) : 0) + ')');
 						else
 							g.push(a[k] + ' ' + GoodsData[k]['name']);
 					}
@@ -314,7 +405,7 @@ let GoodsParser = {
 
 		if (d['state']['current_product']['clan_power'] !== undefined) {
 			isImportant = true;
-			g.push(d['state']['current_product']['clan_power'] + ' ' + d['state']['current_product']['name']);
+			g.push(d['state']['current_product']['clan_power'] + ' ' + i18n('Boxes.Neighbors.GuildPower'));
 		}
 
 		amount = g.join('<br>');
@@ -328,7 +419,7 @@ let GoodsParser = {
 
 
 	/**
-	 * Gebäude mit "Gildenmacht"
+	 * Gebäude mit "GuildPower"
 	 *
 	 * @param d
 	 */

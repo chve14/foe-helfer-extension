@@ -144,6 +144,7 @@
 					'tableSorter/table-sorter',
 					'Sortable/Sortable.min',
 					'jsZip/jszip.min',
+					'date-range/lightpick',
 					'dexie/dexie.min', // indexDB helper lib
 				];
 
@@ -157,6 +158,7 @@
 				'_helper',
 				'_api',
 				'_menu',
+				'indexdb',
 				'kits',
 				'tavern',
 				'outposts',
@@ -165,9 +167,10 @@
 				'productions',
 				'part-calc',
 				'unit',
-        'plunderer',
+				'plunderer',
 				'guildfights',
 				'notes',
+				'stats',
 				'campagnemap',
 				'technologies',
 				'negotiation',
@@ -176,8 +179,11 @@
 				'settings',
 				'investment',
 				'strategy-points',
+				'battle-assist',
 				'citymap',
-				'hidden-rewards'
+				'hidden-rewards',
+				'greatbuildings',
+                'alerts',
 			];
 
 			// Scripte laden (nacheinander)
@@ -188,8 +194,13 @@
 			window.dispatchEvent(new CustomEvent('foe-helper#loaded'));
 
 			// Wenn #content Verfügbar ist, wurde ein Flash-Inhalt geladen...
-			if( document.getElementById('content') ){
-				alert('You installed the FoE Helper but didn\'t switch the game to HTML5. Check that in your game settings!');
+			let IsForum = false;
+			if (window !== undefined && window.location !== undefined && window.location.pathname !== undefined && window.location.pathname.includes('forum')) {
+				IsForum = true;
+            }
+
+			if (document.getElementById('content') && !IsForum ){
+				alert('You installed the FoE Helper but didn\'t switch the game to HTML5. Check that in your game settings!.');
 			}
 
 		} catch (err) {

@@ -36,14 +36,17 @@ let _menu = {
 		'campagneMap',
 		'citymap',
 		'unit',
-    'plunderer',
+		'plunderer',
 		'settings',
+		'stats',
 		'forum',
 		'ask',
 		'github',
 		'chat',
 		'api',
-		'kits'
+		'kits',
+		'alerts',
+		'greatbuildings'
 	],
 
 
@@ -691,7 +694,6 @@ let _menu = {
 
 		btn_Plunderer.on('click', function () {
       		Plunderer.page = 1;
-      		Plunderer.filterByPlayerId = null;
 			Plunderer.Show();
 		});
 
@@ -719,6 +721,28 @@ let _menu = {
 		btn.append(btn_Set);
 
 		return btn;
+	},
+
+	/**
+	 * Statistic
+	 * @returns {*|jQuery}
+	 */
+	stats_Btn: () => {
+		let btn_StatsBG = $('<div />').attr({ 'id': 'stats-Btn', 'data-slug': 'stats' }).addClass('hud-btn');
+
+		_menu.toolTippBox(i18n('Menu.Stats.Title'), i18n('Menu.Stats.Desc'), 'stats-Btn');
+
+		let btn_Stats = $('<span />');
+
+		btn_Stats.on('click', function () {
+			Stats.page = 1;
+			Stats.filterByPlayerId = null;
+			Stats.Show();
+		});
+
+		btn_StatsBG.append(btn_Stats);
+
+		return btn_StatsBG;
 	},
 
 	/**
@@ -865,4 +889,28 @@ let _menu = {
 
 		return btn;
 	},
+
+
+	/**
+	 * FP Produzierende LGs
+	 */
+	/*
+	greatbuildings_Btn: () => {
+
+		let btn = $('<div />').attr({ 'id': 'greatbuildings-Btn', 'data-slug': 'greatbuildings' }).addClass('hud-btn');
+
+		// Tooltip einbinden
+		_menu.toolTippBox(i18n('Menu.greatbuildings.Title'), i18n('Menu.greatbuildings.Desc'), 'greatbuildings-Btn');
+
+		let btn_sp = $('<span />');
+
+		btn_sp.on('click', function () {
+			GreatBuildings.Show();
+		});
+
+		btn.append(btn_sp);
+
+		return btn;
+	},
+	*/
 };

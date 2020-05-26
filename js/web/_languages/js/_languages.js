@@ -1,5 +1,6 @@
 ﻿let Languages = {
 	PossibleLanguages: {
+		br: 'Português do Brasil',
 		cs: 'Český',
 		de: 'Deutsch',
 		en: 'English',
@@ -8,10 +9,12 @@
 		hu: 'Magyar',
 		it: 'Italiano',
 		nl: 'Nederlands',
+		pl: 'Polski',
 		pt: 'Português',
 		ro: 'Română',
 		ru: 'Русский',
 		sk: 'Slovenčina',
-		sv: 'Svenska'
+		sv: 'Svenska',
+		tr: 'Türkçe'
 	},
 };

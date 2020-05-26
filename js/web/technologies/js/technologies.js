@@ -23,12 +23,57 @@ FoEproxy.addHandler('ResearchService', 'getProgress', (data, postData) => {
 	Technologies.UnlockedTechologies = data.responseData;
 });
 
+FoEproxy.addHandler('ResearchService', 'spendForgePoints', (data, postData) => {
+    let CurrentTech = data.responseData['technology'];
+    if (CurrentTech === undefined) return;
+
+    let ID = CurrentTech['id']
+    if (ID === undefined) return;
+
+    let TechFound = false;
+    for (let i in Technologies.UnlockedTechologies.inProgressTechnologies) {
+        if (!Technologies.UnlockedTechologies.inProgressTechnologies.hasOwnProperty(i)) continue;
+
+        if (Technologies.UnlockedTechologies.inProgressTechnologies[i]['tech_id'] === ID) {
+            TechFound = true;
+            Technologies.UnlockedTechologies.inProgressTechnologies[i]['currentSP'] = CurrentTech['progress']['currentSP'];
+
+            break;
+        }
+    }
+
+    if (!TechFound) {
+        let TechCount = Technologies.UnlockedTechologies.inProgressTechnologies.length;
+        Technologies.UnlockedTechologies.inProgressTechnologies[TechCount] = CurrentTech['progress'];
+    }
+
+    if ($('#technologies').length !== 0) {
+        Technologies.CalcBody();
+    }
+});
+
+FoEproxy.addHandler('ResearchService', 'payTechnology', (data, postData) => {
+    let CurrentTech = data.responseData['technology'];
+    if (CurrentTech === undefined) return;
+
+    let ID = CurrentTech['id']
+    if (ID === undefined) return;
+
+    let TechCount = Technologies.UnlockedTechologies.unlockedTechnologies.length
+    Technologies.UnlockedTechologies.unlockedTechnologies[TechCount] = ID;
+
+    if ($('#technologies').length !== 0) {
+        Technologies.CalcBody();
+    }
+});
+
 let Technologies = {
     AllTechnologies: null,
     UnlockedTechologies: false,
     SelectedEraID: undefined,
-       
+
     Eras: {
+        AllAge: 0,
         NoAge: 0,
         StoneAge: 1,
         BronzeAge: 2,
@@ -112,7 +157,7 @@ let Technologies = {
         Technologies.CalcBody();
 
         // Zeitalter vor und zurück schalten
-        $('body').on('click', '.btn-switchage', function () {
+        $('#technologies').on('click', '.btn-switchage', function () {
 
             $('.btn-switchage').removeClass('btn-default-active');
 
@@ -162,7 +207,7 @@ let Technologies = {
             if (!Tech['isResearched'] && !Tech['isTeaser']) {
                 let EraID = Technologies.Eras[Tech['era']];
 
-                if (EraID >= CurrentEraID && EraID <= Technologies.SelectedEraID) {
+                if (EraID >= CurrentEraID && EraID <= Technologies.SelectedEraID && Tech['childTechnologies'].length > 0) { //Alle Technologien voriger ZA und optionale Technologien ausblenden
                     if (RequiredResources['strategy_points'] === undefined)
                     	RequiredResources['strategy_points'] = 0;
 
@@ -219,7 +264,7 @@ let Technologies = {
                 OutputList[OutputList.length] = GoodsList[i]['id'];
             }
             OutputList[OutputList.length] = 'asteroid_ice';
-           
+
             for (let i = 0; i < OutputList.length; i++) {
                 let ResourceName = OutputList[i];
                 if (RequiredResources[ResourceName] !== undefined) {

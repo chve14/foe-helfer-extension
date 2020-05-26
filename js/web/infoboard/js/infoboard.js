@@ -111,7 +111,7 @@ let Infoboard = {
         h.push('<div class="filter-row">');
 
         h.push('<div class="dropdown">');
-        h.push('<input type="checkbox" id="checkbox-toggle"><label class="dropdown-label game-cursor" for="checkbox-toggle">' + i18n('Boxes.Infobox.Filter') + '</label><span class="arrow"></span>');
+        h.push('<input type="checkbox" class="dropdown-checkbox" id="checkbox-toggle"><label class="dropdown-label game-cursor" for="checkbox-toggle">' + i18n('Boxes.Infobox.Filter') + '</label><span class="arrow"></span>');
 
         h.push('<ul>');
         h.push('<li><label class="game-cursor"><input type="checkbox" data-type="auction" class="filter-msg game-cursor" ' + (Infoboard.SavedFilter.includes("auction") ? "checked" : "") + '> ' + i18n('Boxes.Infobox.FilterAuction') + '</label></li>');
@@ -142,7 +142,7 @@ let Infoboard = {
         Infoboard.FilterInput();
         Infoboard.ResetBox();
 
-        $('body').on('click', '#infoboxTone', function() {
+        $('#BackgroundInfo').on('click', '#infoboxTone', function() {
 
             let disabled = $(this).hasClass('deactivated');
 
@@ -168,7 +168,7 @@ let Infoboard = {
 
         let Msg = data[0];
 
-        if (Msg === undefined || Msg['requestClass'] === undefined) {
+        if (!Msg || !Msg['requestClass']) {
             return;
         }
 
@@ -178,13 +178,13 @@ let Infoboard = {
             s = c + '_' + m + t;
 
         // Gibt es eine Funktion dafür?
-        if (Info[s] === undefined) {
+        if (!Info[s]) {
             return;
         }
 
         let bd = Info[s](Msg['responseData']);
 
-        if (bd === false) {
+        if (!bd) {
             return;
         }
 
@@ -194,7 +194,7 @@ let Infoboard = {
 
 
         // wenn nicht angezeigt werden soll, direkt versteckeln
-        if (status === false) {
+        if (!status) {
             tr.hide();
         }
 
@@ -205,7 +205,7 @@ let Infoboard = {
 
         $('#BackgroundInfoTable tbody').prepend(tr);
 
-        if (Infoboard.PlayInfoSound && status !== false) {
+        if (Infoboard.PlayInfoSound && status) {
             Infoboard.SoundFile.play();
         }
     },
@@ -216,8 +216,7 @@ let Infoboard = {
      *
      */
     FilterInput: () => {
-        $('body').on('change', '.filter-msg', function() {
-
+        $('#BackgroundInfo').on('change', '.filter-msg', function() {
             let active = [];
 
             $('.filter-msg').each(function() {
@@ -252,7 +251,7 @@ let Infoboard = {
      *
      */
     ResetBox: () => {
-        $('body').on('click', '.btn-reset-box', function() {
+        $('#BackgroundInfo').on('click', '.btn-reset-box', function() {
             $('#BackgroundInfoTable tbody').html('');
         });
     }
@@ -308,7 +307,7 @@ let Info = {
 
         } else if (d['attachment'] !== undefined) {
 
-            // LG
+            // Greatbuilding
             if (d['attachment']['type'] === 'great_building') {
                 msg = HTML.i18nReplacer(
                     i18n('Boxes.Infobox.Messages.MsgBuilding'), {
@@ -317,10 +316,18 @@ let Info = {
                     }
                 )
             }
-            // Handel
+            // Trade
             else if (d['attachment']['type'] === 'trade_offer') {
-                msg = d['attachment']['offeredAmount'] + ' ' + GoodsData[d['attachment']['offeredResource']]['name'] + ' &#187; ' + d['attachment']['neededAmount'] + ' ' + GoodsData[d['attachment']['neededResource']]['name'];
+                msg = `<div class="offer"><span title="${GoodsData[d['attachment']['offeredResource']]['name']}" class="goods-sprite-50 ${d['attachment']['offeredResource']}"></span> <span>x<strong>${d['attachment']['offeredAmount']}</strong></span> <span class="sign">&#187</span> <span title="${GoodsData[d['attachment']['neededResource']]['name']}" class="goods-sprite-50 ${d['attachment']['neededResource']}"></span> <span>x<strong>${d['attachment']['neededAmount']}</strong></span></div>`;
             }
+        }
+
+        if (undefined === d.sender) {
+            return {
+                class: 'message',
+                type: i18n('Boxes.Infobox.FilterMessage'),
+                msg: Info.GetConversationHeader(d.conversationId, null) + msg
+            };
         }
 
         return {
@@ -336,22 +343,21 @@ let Info = {
      *
      * @param d
      */
-    NoticeIndicatorService_getPlayerNoticeIndicators: (d) => {
+	NoticeIndicatorService_getPlayerNoticeIndicators: (d) => {
 
-        for (let i in d) {
-            if (!d.hasOwnProperty(i)) {
-                break;
-            }
-            
+        for (let entry of d) {
             // FP Typ aus dem Lager ermitteln
-            let InventoryItem = MainParser.Inventory.find(x => (x['id'] === d[i]['itemId'] && x["itemAssetName"].indexOf("forgepoint") !== -1));
-            if(undefined === InventoryItem ||null === InventoryItem) return;
-            let factor = parseInt(InventoryItem['item']['resource_package']['gain']),
-                amount = factor * parseInt(d[i]['amount']);
+            let InventoryItem = MainParser.Inventory.find(x => x.id === entry.itemId && x.itemAssetName.indexOf("forgepoint") !== -1);
+            if (null == InventoryItem) continue;
+            let factor = parseInt(InventoryItem.item.resource_package.gain),
+                amount = factor * parseInt(entry.amount);
 
-            // ... und sichern
+            // ... and save
             Info.ReturnFPPoints += amount;
         }
+
+        // Hierfür soll keine Nachricht in der Infobox angezeigt werden
+        return false;
     },
 
 
@@ -363,7 +369,7 @@ let Info = {
      */
     GuildBattlegroundService_getProvinces: (d) => {
 
-        if (GildFights.SortedColors === null) {
+        if (GildFights.SortedColors === null){
             GildFights.PrepareColors();
         }
 
@@ -379,12 +385,12 @@ let Info = {
         }
 
         if (data['lockedUntil'] !== undefined) {
-            let p = bP.find(o => (o['participantId'] === d[0]['participantId']));
 
-            let tc = GildFights.SortedColors[p['participantId']]['highlight'],
-                ts = GildFights.SortedColors[p['participantId']]['shadow'];
+            let p = bP.find(o => (o['participantId'] === data['ownerId'])),
+				colors = GildFights.SortedColors.find(c => (c['id'] === data['ownerId']));
 
-            // 'Provinz <span style="color:#ffb539">' + prov['name'] + '</span> wurde von <span style="color:'+ tc + ';text-shadow: 0 1px 1px ' + ts +'">' + p['clan']['name'] + '</span> übernommen und ist bis ' + moment.unix(data['lockedUntil']).format('HH:mm:ss') +  ' Uhr gesperrt'
+            let tc = colors['highlight'],
+                ts = colors['shadow'];
 
             return {
                 class: 'guildfighs',
@@ -409,7 +415,8 @@ let Info = {
             }
 
             let d = data['conquestProgress'][i],
-                p = bP.find(o => (o['participantId'] === d['participantId']));
+                p = bP.find(o => (o['participantId'] === d['participantId'])),
+				colors = GildFights.SortedColors.find(c => (c['id'] === d['participantId']));
 
             // es gibt mehrere Gilden in einer Provinz, aber eine kämpft gar nicht, überspringen
             if (Info.GildPoints[data['id']] !== undefined &&
@@ -419,8 +426,8 @@ let Info = {
                 continue;
             }
 
-            let tc = GildFights.SortedColors[p['participantId']]['highlight'],
-                ts = GildFights.SortedColors[p['participantId']]['shadow'];
+            let tc = colors['highlight'],
+                ts = colors['shadow'];
 
             t += '<span style="color:' + tc + ';text-shadow: 0 1px 1px ' + ts + '">' + p['clan']['name'] + '</span> = <span style="color:#ffb539">' + prov['name'] + '</span> - <strong>' + d['progress'] + '</strong>/<strong>' + d['maxProgress'] + '</strong><br>';
 
@@ -525,14 +532,16 @@ let Info = {
      * @returns {string}
      */
     GetConversationHeader: (id, name) => {
-        if (MainParser.Conversations.length > 0) {
-            let header = MainParser.Conversations.find(obj => (obj['id'] === id));
-
-            if (header !== undefined) {
-                return '<div><strong style="color:#ffb539">' + header['title'] + '</strong> - <em>' + name + '</em></div>';
-            }
-        } else {
+        let header = MainParser.Conversations.find(obj => obj.id === id);
+        if (header != null && name != null) {
+            // z.B. normale Chat-Nachricht mit bekannter Chat-ID
+            return '<div><strong style="color:#ffb539">' + header.title + '</strong> - <em>' + name + '</em></div>';
+        } else if (name != null) {
+            // z.B. normale Chat-Nachricht mit unbekannter Chat-ID
             return '<div><strong style="color:#ffb539">' + name + '</strong></div>';
+        } else if (header != null) {
+            // z.B. normale Chat-ereignis-Nachricht mit bekannter Chat-ID (xyz wurde hinzugefügt/hat chat verlassen)
+            return '<div><strong style="color:#ffb539">' + header.title + '</strong></div>';
         }
 
         return '';

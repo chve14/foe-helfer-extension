@@ -34,9 +34,9 @@
  * @property {number} value Wert des Gutes, wird genutzt um die Güter in ihrer Priorität zu sortieren
  */
 
- /**
+/**
  * @typedef {Object} Negotiation_SlotGuessInfo
- * @property {Negotiation_GoodData|null} good Das gut welches angeboten wurde
+ * @property {Negotiation_GoodData|null} good Das Gut welches angeboten wurde
  * @property {0|1|2} match Die Antwort auf das Angebot: 0: Korrekt, 1: Falsche Person, 2: Falsch
  */
 
@@ -57,11 +57,12 @@ let Negotiation = {
 	Message: undefined,
 	MessageClass: 'warning',
 	SortableObj: null,
-	
+
 	WrongGoodsSelected: false,
 	ContinueListing: false,
 	NeedGoodMissmatchConfirm: false,
 
+	StartNegotiationBackupData: undefined,
 
 
 	/**
@@ -83,6 +84,19 @@ let Negotiation = {
 
 			// CSS in den DOM prügeln
 			HTML.AddCssFile('negotiation');
+
+			$('#negotiationBox').on('click', '.negotation-setting', function(){
+				let $this = $(this),
+					id = $this.data('id'),
+					v = $this.prop('checked');
+
+				localStorage.setItem(id, v);
+
+				setTimeout(()=>{
+					Negotiation.StartNegotiation(Negotiation.StartNegotiationBackupData);
+				}, 150);
+
+			});
 
 		} else {
 			HTML.CloseOpenBox('negotiationBox');
@@ -111,7 +125,7 @@ let Negotiation = {
 		}
 	},
 
-	
+
 	/**
 	 * Berechnungen durchführen
 	 *
@@ -125,12 +139,19 @@ let Negotiation = {
 		h.push('<table class="foe-table no-hover">');
 
 
-		if (Negotiation.CurrentTable != null) {
+		if (Negotiation.CurrentTable !== null) {
+
+			let sceg = localStorage.getItem('NegotiationSaveCurrentEraGoods'),
+				sm = localStorage.getItem('NegotiationSaveMedals');
 
 			h.push('<tbody>');
 
 			h.push('<tr>');
-			h.push('<td colspan="4" class="text-warning"><strong>' + i18n('Boxes.Negotiation.Chance') + ': ' + HTML.Format(Math.round(Negotiation.CurrentTable['c'])) + '%</strong></td>');
+			h.push('<td colspan="' + (CurrentTry === 1 ? '1' : '4') + '" class="text-warning"><strong>' + i18n('Boxes.Negotiation.Chance') + ': ' + HTML.Format(Math.round(Negotiation.CurrentTable['c'])) + '%</strong></td>');
+			if (CurrentTry === 1) {
+				h.push('<td colspan="2"><label class="game-cursor" for="NegotiationSaveCurrentEraGoods">' + i18n('Boxes.Negotiation.SaveCurrentEraGoods') + '<input id="NegotiationSaveCurrentEraGoods" class="negotation-setting game-cursor" type="checkbox" data-id="NegotiationSaveCurrentEraGoods"' + ((sceg === null || sceg === 'true') ? ' checked' : '') + '></label></td>');
+				h.push('<td colspan="1"><label class="game-cursor" for="NegotiationSaveMedals">' + i18n('Boxes.Negotiation.SaveMedals') + '<input id="NegotiationSaveMedals" class="negotation-setting game-cursor" type="checkbox" data-id="NegotiationSaveMedals"' + ((sm === null || sm === 'true') ? ' checked' : '') + '></label></td>');
+			}
 			h.push('<td colspan="1" class="text-right" id="round-count" style="padding-right: 15px"><strong>');
 			h.push(i18n('Boxes.Negotiation.Round') + ' ' + (Guesses.length + 1) + '/' + (Negotiation.TryCount));
 			h.push('</strong></td>');
@@ -152,7 +173,7 @@ let Negotiation = {
 					TextClass;
 
 				let maxRequired = GoodInfo.canOccur.length * GoodAmount;
-				
+
 				GoodAmount *= Negotiation.CurrentTable.go[i];
 
 				if (Stock === undefined)
@@ -199,7 +220,7 @@ let Negotiation = {
 			Negotiation.MessageClass = 'danger';
 			Negotiation.Message = i18n('Boxes.Negotiation.TableLoadError');
 		}
-		
+
 		// Verhandlungspartner überschrifteh
 		h.push('<tbody>');
 		h.push('<tr class="thead">');
@@ -259,7 +280,7 @@ let Negotiation = {
 					animation: 150,
 					ghostClass: 'good-drag',
 					onEnd: function () {
-						//Fix für hängen bleibende Tooltips
+						// Fix für hängen bleibende Tooltips
 						if ($('#negotiationBox')[0] !== undefined && $('#negotiationBox')[0]['children'] !== undefined) {
 							for (let i = 0; i < $('#negotiationBox')[0]['children'].length;i++) {
 								if ($('#negotiationBox')[0]['children'][i]['className'] === 'tooltip fade top in') {
@@ -316,6 +337,7 @@ let Negotiation = {
 		}
 	},
 
+
 	/**
 	 * @param {string[]} h list of html-strings to add new contend to
 	 */
@@ -335,7 +357,7 @@ let Negotiation = {
 					[  0, 255, 0], // Grün
 				];
 				const c = Negotiation.CurrentTable.c;
-				
+
 				let mix = c/100*(colors.length-1);
 				const colorIdx = Math.floor(mix);
 				// mix soll ein Wert zwischen 0 und 1 sein
@@ -350,7 +372,7 @@ let Negotiation = {
 					const colorR = Math.min(255, Math.max(0, Math.round(color1[0]*invMix + color2[0]*mix)));
 					const colorG = Math.min(255, Math.max(0, Math.round(color1[1]*invMix + color2[1]*mix)));
 					const colorB = Math.min(255, Math.max(0, Math.round(color1[2]*invMix + color2[2]*mix)));
-					
+
 					colorVal = `rgba(${colorR}, ${colorG}, ${colorB}, 0.3)`;
 				} else {
 					const color = colors[colorIdx];
@@ -365,7 +387,7 @@ let Negotiation = {
 			for (let place = 0; place < Negotiation.PlaceCount; place++) {
 				const slotSugestion = nextRoundSuggestion[place];
 				const good_id = slotSugestion ? slotSugestion.resourceId : 'empty';
-				
+
 				if (slotSugestion) {
 					h.push('<td class="text-center">');
 					h.push(`<span class="goods-sprite ${good_id}"></span>`);
@@ -392,7 +414,7 @@ let Negotiation = {
 
 		const guess = Guesses[tryNumber];
 		const suggestion = GuessesSuggestions[tryNumber];
-		
+
 		h.push('<tr class="guess goods-opacity">');
 		for (let place = 0; place < Negotiation.PlaceCount; place++) {
 			const SlotGuess = guess[place];
@@ -405,6 +427,7 @@ let Negotiation = {
 		}
 		h.push('</tr>');
 	},
+
 
 	createPossibleItemsLine: (h) => {
 		h.push('<tr>');
@@ -425,6 +448,7 @@ let Negotiation = {
 		h.push('</tr>');
 	},
 
+
 	confirmGoodsMissmatch: () => {
 		Negotiation.Message = null;
 		Negotiation.NeedGoodMissmatchConfirm = false;
@@ -439,13 +463,15 @@ let Negotiation = {
 	 * @param {number} [forcedTryCount]
 	 */
 	StartNegotiation: (responseData, forcedTryCount) => {
+		Negotiation.StartNegotiationBackupData = responseData;
+
 		if (responseData.__class__ === "Error") return;
 
 		if ($('#negotiation-Btn').hasClass('hud-btn-red')) {
 			$('#negotiation-Btn').removeClass('hud-btn-red');
 			$('#negotiation-Btn-closed').remove();
 		}
-		
+
 		Negotiation.CurrentTry = 1;
 		Negotiation.Message = null;
 		Negotiation.WrongGoodsSelected = false;
@@ -456,7 +482,7 @@ let Negotiation = {
 
 		const GoodsOrdered = [];
 		Negotiation.GoodsOrdered = GoodsOrdered;
-		
+
 		for (let good_id in negotiationResources) {
 			if (!negotiationResources.hasOwnProperty(good_id)) continue;
 
@@ -500,7 +526,7 @@ let Negotiation = {
 		Negotiation.GetTable(tableName)
 			.then(table => {
 				Negotiation.CurrentTable = table;
-				
+
 				if (table) {
 					Negotiation.updateNextGuess();
 				}
@@ -534,7 +560,7 @@ let Negotiation = {
 
 		let numFreeSlots = 0;
 		for (let data of SlotData) {
-	
+
 			const State      = data.state;
 			const ResourceId = data.resourceId;
 			const SlotID     = data.slotId || 0;
@@ -639,7 +665,7 @@ let Negotiation = {
 				continuationCode += CurrentGuess[PlaceMutation[i]].match;
 			}
 			Negotiation.CurrentTable = Negotiation.CurrentTable.r[continuationCode];
-			
+
 			Negotiation.updateNextGuess();
 		}
 
@@ -666,6 +692,7 @@ let Negotiation = {
 		}
 	},
 
+
 	goodButtonCompare: (goodA, goodB) => {
 		function goodValue(good) {
 			const data = GoodsData[good];
@@ -678,10 +705,11 @@ let Negotiation = {
 		if (goodA === goodB) return 0;
 		const valA = goodValue(goodA);
 		const valB = goodValue(goodB);
-		
+
 		if (valA === valB) return goodA > goodB ? 1 : -1
 		return valA - valB;
 	},
+
 
 	/**
 	 * @param {Negotiation_GoodData} good
@@ -702,19 +730,22 @@ let Negotiation = {
 		}
 	},
 
+
 	updateNextGuess: () => {
 		if (!Negotiation.CurrentTable) return;
 		const GoodsOrdered = Negotiation.GoodsOrdered;
 		const PlaceMutation = Negotiation.PlaceMutation;
 		const gu = Negotiation.CurrentTable.gu;
+
 		/** @type {(Negotiation_GoodData|null)[]} */
 		const GuessesSuggestion = [];
+
 		for (let i = 0; i < gu.length; i++) {
-			const good = gu[i] === 255 ? null : GoodsOrdered[gu[i]];
-			GuessesSuggestion[PlaceMutation[i]] = good;
+			GuessesSuggestion[PlaceMutation[i]] = gu[i] === 255 ? null : GoodsOrdered[gu[i]];
 		}
 		Negotiation.GuessesSuggestions[Negotiation.CurrentTry-1] = GuessesSuggestion;
 	},
+
 
 	updateInitialPermutation: () => {
 		if (Negotiation.CurrentTry !== 1) {
@@ -739,6 +770,7 @@ let Negotiation = {
 		;
 	},
 
+
 	findMatchingPermutation: () => {
 		const currentTry = Negotiation.CurrentTry;
 		const GoodsOrdered = Negotiation.GoodsOrdered;
@@ -748,6 +780,7 @@ let Negotiation = {
 		const GoodsOrderedCopy = GoodsOrdered.slice();
 		let bestDistance = Number.MAX_SAFE_INTEGER;
 		let found = false;
+
 		// Gehe alle Permutationen der Verhandlungspartner durch (120 bei 5 Personen)
 		for (let permutation of helper.permutations([...new Array(PlaceCount).keys()])) {
 			const goodMap = new Array(GoodsOrdered.length).fill(255);
@@ -757,13 +790,14 @@ let Negotiation = {
 			let table = MainTable;
 			let lastTable = table;
 			let result;
+
 			// prüfe ob dies eine gültige Permutation wäre
 			for (let round = 0; round < currentTry; round++) {
 				result = 0;
 				for (let place = 0; place < PlaceCount; place++) {
 					const realPlace = permutation[place];
 					const SlotGuess = Guesses[round][realPlace];
-					// result für die verfolgung der weiteren Runden berechnen
+					// result für die Verfolgung der weiteren Runden berechnen
 					result = result*4 + SlotGuess.match;
 
 					const guessGood = table.gu[place];
@@ -777,6 +811,7 @@ let Negotiation = {
 						// Gut wurde noch nicht zugeordnet
 						goodMap[usedGood] = guessGood;
 						tableGoodMapped[guessGood] = true;
+
 					} else if (goodMapped !== guessGood) {
 						// Zuordnung passt nicht zur aktuellen Tabelle
 						valid = false;
@@ -811,6 +846,7 @@ let Negotiation = {
 		return found;
 	},
 
+
 	/**
 	 * Name zusammen setzen
 	 *
@@ -821,6 +857,7 @@ let Negotiation = {
 	GetTableName: (TryCount, GoodCount) => {
 		return TryCount + '_' + GoodCount;
 	},
+
 
 	/**
 	 * Gut bestimmen
@@ -838,7 +875,14 @@ let Negotiation = {
 			Value = 50;
 		}
 		else if (GoodName === 'medals') {
-			Value = 3000;
+			let SaveMedalSetting = localStorage.getItem('NegotiationSaveMedals');
+			if (SaveMedalSetting === 'false') { // default true
+				Value = 75;
+			}
+			else
+			{
+				Value = 3000;
+            }
 		}
 		else if (GoodName === 'promethium') {
 			Value = 3500;
@@ -847,16 +891,19 @@ let Negotiation = {
 			Value = 4000;
 		}
 		else {
-			let Good = GoodsData[GoodName];
-			let Era = Good['era'];
-
-			let EraID = Technologies.Eras[Era];
-			if (EraID === undefined) EraID = 20;
-
-			if (Era === 'SpaceAgeMars') { //Marsgüter mit arkt. Gütern gleich setzen
-				EraID -= 3;
+			let SaveMedalSetting = localStorage.getItem('NegotiationSaveCurrentEraGoods');
+			if (SaveMedalSetting === 'false') { // default true
+				Value = 100;
 			}
-			Value = EraID * 100;
+			else {
+				let Good = GoodsData[GoodName];
+				let Era = Good['era'];
+
+				let EraID = Technologies.Eras[Era];
+				if (EraID === undefined) EraID = 20;
+
+				Value = EraID * 100;
+            }
 
 			let Stock = ResourceStock[GoodName];
 			if (Stock === undefined || Stock === 0)
@@ -991,13 +1038,13 @@ let NegotiationDebugger = {
 		h.push('</select></label>');
 		h.push('<button onclick="NegotiationDebugger.start()">Start</button>');
 		h.push(`Always show Possible Matches: <input type="checkbox" onchange="NegotiationDebugger.changeAlwaysShowPossibleMatch(this)"${Negotiation.ContinueListing?' checked':''} />`);
-		
+
 
 		h.push('<div style="display:grid; grid-template-columns: repeat(auto-fill, 60px);">');
 		const numGoods = data.numGoods;
 		for (let i = 0; i < numGoods; i++) {
 			let good = data.goods[i] || 'empty';
-			
+
 			h.push(`<div>Good ${i+1}:<br/><span onclick="NegotiationDebugger.selectGoodFor(${i})" style="box-sizing: border-box;width: 40px${data.selected===i?'; border: 1px solid red':''}" class="${goodSpriteClass(good)}"></span></div>`);
 		}
 		h.push('</div>');
@@ -1018,17 +1065,17 @@ let NegotiationDebugger = {
 		for (let pos = 0; pos < 5; pos++) {
 			h.push(`<div style="flex-grow:1">`);
 			h.push(`Position ${pos}:<br/>`);
-			
+
 			h.push(`<div style="display: grid; grid-template-columns: repeat(auto-fill, 40px);">`);
 			for (let i = 0; i < numGoods; i++) {
 				let good = data.goods[i] || 'empty';
 				const selected = good === data.submitGoods[pos];
-	
+
 				h.push(`<span onclick="NegotiationDebugger.selectGoodForSubmit(${pos}, ${i})" style="box-sizing: border-box;width: 40px${selected?'; border: 1px solid red':''}" class="${goodSpriteClass(good)}"></span> `);
 			}
 			h.push(`</div>`);
-			
-			
+
+
 			let selectedValue = data.submitValue[pos]
 			if (selectedValue == null) selectedValue = Selectables[Selectables.length-1].value;
 			for (let selectable of Selectables) {
@@ -1173,4 +1220,4 @@ let NegotiationDebugger = {
 
 		NegotiationDebugger.BuildBox();
 	}
-}
+};
