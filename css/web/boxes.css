@@ -17,6 +17,7 @@
 .OwnPartBoxBackground .outerArrow:before,
 .OwnPartBoxBackground .outerArrow span.arrow,
 .window-minimize,
+.window-settings,
 .window-ask,
 .window-speaker,
 .window-close {
@@ -70,7 +71,7 @@
 	position: absolute;
 	top: -30px;
 	left: 7px;
-	right: 1px;
+	right: 3px;
 }
 
 .window-head span.title {
@@ -103,17 +104,17 @@
 	height: 24px;
 	display: inline-block;
 	position: relative;
-	background-position: -101px 0;
-	width: 44px;
+	background-position: -101px -1px;
+	width: 35px;
 	margin-right: 3px;
 }
 
 .window-head span.window-speaker:hover {
-    background-position: -101px -24px;
+    background-position: -101px -25px;
 }
 
 .window-head span.window-speaker.deactivated {
-	background-position: -146px -24px;
+	background-position: -146px -25px;
 }
 
 .window-head span.window-speaker.deactivated:hover {
@@ -140,6 +141,20 @@
 }
 
 
+.window-head span.window-settings {
+	background-position: -191px -1px;
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	position: relative;
+	margin-right: 2px;
+}
+
+.window-head span.window-settings:hover {
+	background-position: -191px -25px;
+}
+
+
 .window-head span.window-close {
 	background-position: 0 -1px;
 	display: inline-block;
@@ -155,6 +170,11 @@
 .window-body {
 	height: 100%;
 	overflow: hidden;
+}
+
+.window-body h1 {
+	font-size: 135%;
+	margin: 0.25em 0 0;
 }
 
 .window-body input[type=text],
@@ -346,4 +366,19 @@
 	color: #dff0d8;
 	background-color: #3c763d;
 	border-color: #d6e9c6;
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+.foe-helper-overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: var(--50-black);
+	width: 100%;
+	height: 100%;
+	z-index: 250;
+	backdrop-filter: blur(5px);
 }

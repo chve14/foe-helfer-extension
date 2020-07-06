@@ -146,6 +146,8 @@
 					'Sortable/Sortable.min',
 					'jsZip/jszip.min',
 					'date-range/lightpick',
+					'lit-html/lit-html.bundle.min',
+					'SimpleMarkdown/simple-markdown.min',
 					'dexie/dexie.min', // indexDB helper lib
 				];
 
@@ -169,12 +171,11 @@
 				'part-calc',
 				'unit',
 				'guildfights',
-				'notes',
 				'stats',
 				'campagnemap',
 				'technologies',
 				'negotiation',
-				'eventquest',
+				'eventchests',
 				'settings',
 				'investment',
 				'strategy-points',
@@ -185,6 +186,7 @@
                 'alerts',
                 'notice',
 				'inventory-tracker',
+				'ws-chat',
 			];
 
 			// Scripte laden (nacheinander)

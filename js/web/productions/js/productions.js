@@ -19,7 +19,6 @@ let Productions = {
 	BuildingsAll: [],
 	BuildingsProducts: [],
 	BuildingsProductsGroups: [],
-	MainBuildingBonusAdded: false,
 	ShowDaily: false,
 
 	ActiveTab: 1,
@@ -48,6 +47,8 @@ let Productions = {
 		'premium',			// Diamanten
 		'population',		// Bevölkerung
 		'happiness',		// Zufriedenheit
+		'clan_power',		// Macht der Gilde
+		'clan_goods',		// Gildengüter (Arche, Ehrenstatue etc.)
 		'packaging',		// Güter Gruppe (5 verschieden z.B.)
 	],
 
@@ -257,7 +258,7 @@ let Productions = {
 	 */
 	readType: (d) => {
 		let Products = [],
-			CurrentResources = undefined,
+			CurrentResources = [],
 			EntityID = d['cityentity_id'],
 			CityEntity = MainParser.CityEntities[EntityID],
 			AdditionalResources = [],
@@ -302,9 +303,42 @@ let Productions = {
 			in: 0
 		};
 
-		if (d.state && d.state.current_product && d.state.current_product.product) {
-			if (d.state.current_product.product.resources) {
+		if (d.state && d.state.current_product) {
+			if (d.state.current_product.product && d.state.current_product.product.resources) {
 				CurrentResources = d['state']['current_product']['product']['resources'];
+			}
+
+			if (d.state.current_product['clan_power']) {
+				CurrentResources['clan_power'] = d.state.current_product['clan_power']; // z.B. Ruhmeshalle
+			}
+
+			if (d.state.current_product['name'] === 'clan_goods' && d.state.current_product['goods']) {
+				let GoodSum = 0;
+				for (let i = 0; i < d.state.current_product['goods'].length; i++) {
+					GoodSum += d.state.current_product['goods'][i]['value'];
+				}
+
+				if (GoodSum > 0) {
+					CurrentResources['clan_goods'] = GoodSum;
+                }
+            }
+
+			if (d.state.current_product.guildProduct && d.state.current_product.guildProduct.resources) {
+				let GoodSum = 0;
+
+				for (let ResourceName in d.state.current_product['guildProduct']['resources']) {
+					if(!d.state.current_product['guildProduct']['resources'].hasOwnProperty(ResourceName)) continue;
+
+					if (ResourceName === 'clan_power') {
+						CurrentResources['clan_power'] = d.state.current_product['guildProduct']['resources']['clan_power'];
+					}
+					else {
+						GoodSum += d.state.current_product['guildProduct']['resources'][ResourceName];
+                    }
+				}
+				if (GoodSum > 0) {
+					CurrentResources['clan_goods'] = GoodSum;
+				}
 			}
 		}
 
@@ -503,6 +537,7 @@ let Productions = {
 					sizes[MainParser.CityMapData[i]['cityentity_id']] = (width * length) + (Math.min(width, length) * RequiredStreet / 2);
 					sizetooltips[MainParser.CityMapData[i]['cityentity_id']] = (RequiredStreet > 0 ? HTML.i18nReplacer(i18n('Boxes.Production.SizeTT'), { 'streetnettosize': (Math.min(width, length) * RequiredStreet / 2) }) : '');
 	            }
+
 			// einen Typ durchsteppen [money,supplies,strategy_points,...]
 			for(let i in buildings)
 			{
@@ -522,7 +557,7 @@ let Productions = {
 						rowA.push('<td class="text-right is-number" data-number="' + MotivatedProductCount + '">' + HTML.Format(ProductCount) + (ProductCount !== MotivatedProductCount ? '/' + HTML.Format(MotivatedProductCount) : '') + '</td>');
 						
 						let size = sizes[buildings[i]['eid']] | 0,
-							SizeToolTip = sizetooltips[buildings[i]['eid']];
+							SizeToolTip = sizetooltips[buildings[i]['eid']],
 							efficiency = (MotivatedProductCount / size);
 
 						let EfficiencyString;
@@ -582,7 +617,7 @@ let Productions = {
 						}
 
 						tds += '<td class="is-number" data-number="' + CurrentBuildingCount + '">' + pA.join('<br>') + '</td>' +
-							'<td class="addon-info is-number" data-number="' + buildings[i]['era'] + '">' + i18n('Eras.' + buildings[i]['era']) + '</td>' +
+							'<td class="addon-info is-number" data-number="' + buildings[i]['era'] + '" title="' + i18n('Boxes.Productions.TTGoodsEra')  + '">' + i18n('Eras.' + buildings[i]['era']) + '</td>' +
 							'<td class="wsnw is-date" data-date="' + buildings[i]['at'] + '">' + moment.unix(buildings[i]['at']).format(i18n('DateTime')) + '</td>' +
 							'<td>' + moment.unix(buildings[i]['at']).fromNow() + '</td>' +
 							'<td class="text-right"><span class="show-entity" data-id="' + buildings[i]['id'] + '"><img class="game-cursor" src="' + extUrl + 'css/images/hud/open-eye.png"></span></td>' +
@@ -621,7 +656,6 @@ let Productions = {
 							'<td class="is-number" data-number="' + MotivatedProductCount + '">' + HTML.Format(ProductCount) + (ProductCount !== MotivatedProductCount ? '/' + HTML.Format(MotivatedProductCount) : '') + '</td>' +
 							'<td class="text-right is-number addon-info" data-number="' + (size*groups[i]['count']) + '">' + (size*groups[i]['count']) + '</td>'+
 							'<td class="text-right is-number addon-info" data-number="' + efficiency + '">' + EfficiencyString + '</td>'+
-							'<td class="addon-info is-number" data-number="' + groups[i]['era'] + '">' + i18n('Eras.' + groups[i]['era']) + '</td>'+
 							'</tr>';
 
 						rowB.push(tds);
@@ -767,7 +801,6 @@ let Productions = {
 				table.push('<th colspan="1" class="is-number game-cursor" data-type="' + type + '-groups">' + i18n('Boxes.Productions.Headings.amount') + '</th>');
 				table.push('<th colspan="1" class="is-number game-cursor text-right" data-type="' + type + '-groups">' + i18n('Boxes.Productions.Headings.area') + '</th>');
 				table.push('<th colspan="1" class="is-number game-cursor text-right" data-type="' + type + '-groups">' + i18n('Boxes.Productions.Headings.efficiency') + '</th>');
-				table.push('<th colspan="1" class="is-number game-cursor" data-type="' + type + '-groups">' + i18n('Boxes.Productions.Headings.era') + '</th>');
 				table.push('</tr>');
 
 				table.push( rowB.join('') );
@@ -1071,10 +1104,6 @@ let Productions = {
 	 */
 	prepareMainBuilding: (d)=>{
 
-		if(Productions.MainBuildingBonusAdded === true){
-			return d;
-		}
-
 		// Botschafter durchsteppen
 		if(MainParser.EmissaryService !== null)
 		{
@@ -1157,6 +1186,12 @@ let Productions = {
 		if (GoodType === 'happiness') {
 			return i18n('Boxes.Productions.Happiness');
 		}
+		else if (GoodType === 'clan_power') {
+			return i18n('Boxes.Productions.GuildPower');
+		}
+		else if (GoodType === 'clan_goods') {
+			return i18n('Boxes.Productions.GuildGoods');
+        }
 		else {
 			return GoodsData[GoodType]['name'];
 		}
