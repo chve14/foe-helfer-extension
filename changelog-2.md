@@ -1,5 +1,171 @@
 ## Changelog - Extension
 
+##### 2.5.1.0
+
+**New**
+- Own contribution calculator:
+    - Power levels added: 
+        - a new button, bottom right, starts this function in an extra box
+        - Levels up to > 100 Available
+        - Buildings with double harvests are considered
+
+**Update**
+- Notes:
+    - [#1300](https://github.com/dsiekiera/foe-helfer-extension/issues/1300) Notes are saved when closing the box
+
+- Settings:
+    - [#1413](https://github.com/dsiekiera/foe-helfer-extension/issues/1413) Moved buttons from menu to new settings box
+    
+- Production overview:
+    - [#1424](https://github.com/dsiekiera/foe-helfer-extension/issues/1424) Bonus from ambassadors and guild bonuses didn't show up at city hall when returning
+
+- Costcalculator:
+    - [#1433](https://github.com/dsiekiera/foe-helfer-extension/issues/1433) correct formatting added
+    
+- City map:
+    - [#1438](https://github.com/dsiekiera/foe-helfer-extension/issues/1438) on the map the ages are shown by mouseover
+
+**BugFix**
+- Infobox:
+    - [#1375](https://github.com/dsiekiera/foe-helfer-extension/issues/1375) double entries fixed
+
+- Statistics:
+    - [#917](https://github.com/dsiekiera/foe-helfer-extension/issues/917) "since Tuesday" fixed
+
+- Translations:
+    - [#924](https://github.com/dsiekiera/foe-helfer-extension/issues/924) String fixed
+
+- Events:
+    - [#1321](https://github.com/dsiekiera/foe-helfer-extension/issues/1324) Counter in menu now counts correctly
+
+- Production overview:
+    - [#1343](https://github.com/dsiekiera/foe-helfer-extension/issues/1343) Productions could appear twice
+
+- Own contribution calculator:
+    - [#1378](https://github.com/dsiekiera/foe-helfer-extension/issues/1378) when opening other LGs the own player name was displayed
+
+- Notes:
+    - [#1454](https://github.com/dsiekiera/foe-helfer-extension/issues/1454) Content displayed too wide
+
+- Costcalculator:
+    - [#1471](https://github.com/dsiekiera/foe-helfer-extension/issues/1471) Tooltip sometimes hangs
+    - [#1495](https://github.com/dsiekiera/foe-helfer-extension/issues/1495) Colors of the level warning adapted
+
+---
+
+
+##### 2.5.0.1
+
+**Update**
+- Cost Accountant:
+    - [#550](https://github.com/dsiekiera/foe-helfer-extension/issues/550) 80% button added
+    
+**BugFix**
+
+- Own contribution calculator:
+    - [#1317](https://github.com/dsiekiera/foe-helfer-extension/issues/1317) Sound when switching a repeatable "output X FP" quest does not play reliably
+    - [#1318](https://github.com/dsiekiera/foe-helfer-extension/issues/1318) Sound in the cost calculator comes in Bronze Age until FMA also at the quest "explore 2 technologies
+
+- hidden events:
+    - [#1295](https://github.com/dsiekiera/foe-helfer-extension/issues/1295) blue counter icon prevented click
+    - [#1314](https://github.com/dsiekiera/foe-helfer-extension/issues/1314) duplicate streets were not displayed
+    
+- Legendary buildings:
+    - [#1305](https://github.com/dsiekiera/foe-helfer-extension/issues/1305) the input of FP costs disappeared into another field
+    - [#1315](https://github.com/dsiekiera/foe-helfer-extension/issues/1315) Error when one of the FP producing LG is above lvl100 or higher
+    
+- Negotiating assistant:
+    - [#1342](https://github.com/dsiekiera/foe-helfer-extension/issues/1342) on the beta server you could start the assistant in the GG manually (Inno Games doesn't want to do that)
+
+---
+
+##### 2.5.0.0
+
+**New**
+- Boost box:
+    - a small box that is displayed in the GEX, GG, GvG and the neighbors shows how many attempts remain for spoils of war or changes
+    
+- Legendary buildings:
+    - this box calculates which FP producing building would be the next cheapest
+    
+- Notes:
+    - Groups and sorts notes of all kinds. This function works with the server and is device independent.
+
+**Update**
+- According to Inno's wishes we have removed or modified the following elements: [https://foe-rechner.de/news/changes-to-the-foe-helper](https://foe-rechner.de/news/changes-to-the-foe-helper)
+    - Snipe column in the cost calculator removed
+    - PvP activities removed
+    - "Looting assistance" + attack and defense values removed
+    - Event-Quest will only be linked
+    - Negotiation assistants are hidden in the guild battles
+    - Hidden events are displayed without expiration date
+
+- Hidden rewards:
+    - a counter shows how many events are still somewhere on the map
+
+- Production overview:
+    - [#1185](https://github.com/dsiekiera/foe-helfer-extension/issues/1185) Age is also output
+    - Guild power as new tab available
+    - [#1205](https://github.com/dsiekiera/foe-helfer-extension/issues/1205) Sorting function for goods
+    
+- Cost caclculator:
+    - [#1168](https://github.com/dsiekiera/foe-helfer-extension/issues/1186) new checkbox "All", so all places 1-5 are displayed without dependencies
+    
+- Settings:
+    - [#1169](https://github.com/dsiekiera/foe-helfer-extension/issues/1189) Firefox: Settings menu sporadically shows no translated texts
+
+
+**BugFixes**
+- Cost caclculator:
+    - [#1153](https://github.com/dsiekiera/foe-helfer-extension/issues/1153) already deposited FP were not recognized correctly
+
+- Tavernbadge:
+    - [#1182](https://github.com/dsiekiera/foe-helfer-extension/issues/1182) Counter for 4th try is wrong, times are taken over from now on    
+
+- CityMap (internal): 
+    - [#1184](https://github.com/dsiekiera/foe-helfer-extension/issues/1184) Incorrect display of free space
+    - [#1204](https://github.com/dsiekiera/foe-helfer-extension/issues/1204) Transmission box is no longer displayed in the neighbourhood
+
+- Product overview:
+    - [#1201](https://github.com/dsiekiera/foe-helfer-extension/issues/1201) Street with "satisfaction" are no longer calculated with street binding
+
+---
+
+##### 2.4.6.2
+
+**BugFix**
+- Extension: 
+    - Debug code removed
+
+- Cost calculator:
+    - [#1118](https://github.com/dsiekiera/foe-helfer-extension/issues/1118) [#1124](https://github.com/dsiekiera/foe-helfer-extension/issues/1124) Fixed speaker button
+
+- Production overlap:
+    - two-lane roads are considered for efficiency
+
+---
+
+##### 2.4.6.1
+
+**BugFix**
+- FP-Bar:
+    - [#836](https://github.com/dsiekiera/foe-helfer-extension/issues/836) [#1025](https://github.com/dsiekiera/foe-helfer-extension/issues/1025) [#1044](https://github.com/dsiekiera/foe-helfer-extension/issues/1044) [#1059](https://github.com/dsiekiera/foe-helfer-extension/issues/1059) [#1075](https://github.com/dsiekiera/foe-helfer-extension/issues/1075) [#1089](https://github.com/dsiekiera/foe-helfer-extension/issues/1089) [#1097](https://github.com/dsiekiera/foe-helfer-extension/issues/1097) [#1098](https://github.com/dsiekiera/foe-helfer-extension/issues/1098) [#1100](https://github.com/dsiekiera/foe-helfer-extension/issues/1100) [#1101](https://github.com/dsiekiera/foe-helfer-extension/issues/1101) [#1108](https://github.com/dsiekiera/foe-helfer-extension/issues/1108) [#1114](https://github.com/dsiekiera/foe-helfer-extension/issues/1114) [#1116](https://github.com/dsiekiera/foe-helfer-extension/issues/1116) [#1117](https://github.com/dsiekiera/foe-helfer-extension/issues/1117) Inno has integrated a new technology for the management and transmission of the Forge points, we have now adapted it
+    
+- Infobox:
+    - [#555](https://github.com/dsiekiera/foe-helfer-extension/issues/555) [#742](https://github.com/dsiekiera/foe-helfer-extension/issues/742) [#771](https://github.com/dsiekiera/foe-helfer-extension/issues/771) [#939](https://github.com/dsiekiera/foe-helfer-extension/issues/939) [#1080](https://github.com/dsiekiera/foe-helfer-extension/issues/1080) Wrong FP number when leveling another LG fixed in the box
+    
+- Harvest helper:
+    - [#1036](https://github.com/dsiekiera/foe-helfer-extension/issues/1036) [#1110](https://github.com/dsiekiera/foe-helfer-extension/issues/1110) Buildings that could not be pillaged were displayed as pillable
+    - [#1058](https://github.com/dsiekiera/foe-helfer-extension/issues/1058) Workaround for moved window outside of the viewport
+
+- Statistics:
+    - [#1077](https://github.com/dsiekiera/foe-helfer-extension/issues/1077) same units as a reward were not grouped
+
+- Cost calculator:
+    - [#1118](https://github.com/dsiekiera/foe-helfer-extension/issues/1118)
+
+---
+
 ##### 2.4.6
 
 **New**

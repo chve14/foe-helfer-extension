@@ -23,7 +23,7 @@ FoEproxy.addMetaHandler('battleground_colour', (xhr, postData) => {
 	GildFights.Colors = JSON.parse(xhr.responseText);
 });
 
-// Gildengefechte - Snapshot
+// Gildengefechte
 FoEproxy.addHandler('GuildBattlegroundService', 'getPlayerLeaderboard', (data, postData) => {
 	// immer zwei vorhalten, für Referenz Daten (LiveUpdate)
 	if(localStorage.getItem('GildFights.NewAction') !== null){
@@ -65,7 +65,6 @@ FoEproxy.addHandler('GuildBattlegroundService', 'getPlayerLeaderboard', (data, p
 	}
 });
 
-
 // Gildengefechte - Map, Gilden
 FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data, postData) => {
 	GildFights.init();
@@ -73,6 +72,11 @@ FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data, postDa
 });
 
 
+/**
+ * GuildFights Class
+ *
+ * @type {{init: GildFights.init, SetBonusTypes: GildFights.SetBonusTypes, PrepareColors: GildFights.PrepareColors, ShowPlayerBox: GildFights.ShowPlayerBox, ProvinceNames: null, Bonuses: [], PrevActionTimestamp: null, NewActionTimestamp: null, SortedColors: null, ShowBonusSidebar: GildFights.ShowBonusSidebar, ShowGildBox: GildFights.ShowGildBox, BonusTypes: [string, string, string, string], HideBonusSidebar: GildFights.HideBonusSidebar, BuildFightContent: GildFights.BuildFightContent, Colors: null, InjectionLoaded: boolean, RefreshTable: GildFights.RefreshTable, MapData: null, BuildPlayerContent: GildFights.BuildPlayerContent, CalcBonusData: GildFights.CalcBonusData, NewAction: null, PlayersPortraits: null, PrevAction: null}}
+ */
 let GildFights = {
 
 	PrevAction: null,
@@ -86,7 +90,6 @@ let GildFights = {
 	ProvinceNames : null,
 	InjectionLoaded: false,
 
-
 	/**
 	 * Zündung
 	 */
@@ -97,7 +100,6 @@ let GildFights = {
 				if ($('#LiveGildFighting').length > 0) {
 
 					if(data.responseData[0] !== undefined){
-						// console.log('msg', data.responseData[0]);
 						GildFights.RefreshTable(data.responseData[0]);
 					}
 				}
@@ -216,13 +218,18 @@ let GildFights = {
 			b.push('<td class="text-center">');
 			b.push(playerNew['battlesWon'] + fightAddOn);
 			b.push('</td>');
+			
+			b.push('<td class="text-center">');
+			let both = playerNew['battlesWon'] + (playerNew['negotiationsWon']*2);
+			b.push(both);
+			b.push('</td>');
 
 			b.push('</tr>');
 		}
 
+        let tNF = (tN*2)+tF;
 
-
-		t.push('<table class="foe-table">');
+        t.push('<table class="foe-table">');
 
 		t.push('<thead>');
 		t.push('<tr>');
@@ -232,6 +239,7 @@ let GildFights = {
 		t.push('<th>' + i18n('Boxes.Gildfights.Player') + '</th>');
 		t.push('<th class="text-center">' + i18n('Boxes.Gildfights.Negotiations') + ' <strong class="text-warning"><small>(' + HTML.Format(tN) + ')</small></strong></th>');
 		t.push('<th class="text-center">' + i18n('Boxes.Gildfights.Fights') + ' <strong class="text-warning"><small>(' + HTML.Format(tF) + ')</small></strong></th>');
+		t.push('<th class="text-center">' + i18n('Boxes.Gildfights.Total') + ' <strong class="text-warning"><small>(' + HTML.Format(tNF) + ')</small></strong></th>');
 
 		t.push('</tr>');
 		t.push('</thead>');
