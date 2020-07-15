@@ -380,11 +380,8 @@ let Stats = {
 		$('#statsBody .options').html(Stats.RenderOptions());
 		let secondaryOptions = Stats.isSelectedRewardSources() ? Stats.RenderSecondaryOptions() : '';
 
-		if(Stats.isSelectedGBGSources() && $('#GVGDatePicker').length === 0){
-			secondaryOptions = `<div></div><input class="game-cursor" id="GVGDatePicker" type="text">`;
-		}
-
 		$('#statsBody .options-2').html(secondaryOptions).promise().done(function(){
+			/*
 			if ($('#GVGDatePicker').length > 0) {
 
 				Stats.DatePickerObj = new Litepicker({
@@ -404,6 +401,7 @@ let Stats = {
 			else {
 				Stats.DatePickerObj = null;
             }
+			*/
 		});
 	},
 
@@ -553,6 +551,8 @@ let Stats = {
 			value: it,
 		}));
 
+		//btnsPeriodSelect.push('<input class="game-cursor" id="GVGDatePicker" type="text">');
+
 		const btnsRewardSelect = [
 			'__event',
 			'battlegrounds_conquest', // Battle ground
@@ -649,7 +649,7 @@ let Stats = {
 	 * @param disabled	Disabled button
 	 * @returns {string}
 	 */
-	RenderButton: ({name, isActive, dataType, value, title, disabled}) => `<button ${disabled ? 'disabled' : ''} class="btn btn-default btn-tight${!disabled && isActive ? ' btn-green' : ''}" data-type="${dataType}" data-value="${value}" title="${title || ''}">${name}</button>`,
+	RenderButton: ({ name, isActive, dataType, value, title, disabled }) => `<button ${disabled ? 'disabled' : ''} class="btn btn-default btn-tight${!disabled && isActive ? ' btn-green' : ''}" data-type="${dataType}" data-value="${value}" title="${(title || '').replace(/"/g,'&quot;')}">${name}</button>`,
 
 	/**
 	 * Render a tab
@@ -662,7 +662,7 @@ let Stats = {
 	 * @param disabled	Disabled button
 	 * @returns {string}
 	 */
-	RenderTab: ({name, isActive, dataType, value, title, disabled}) => `<li ${disabled ? 'disabled' : ''} class="${value} ${!disabled && isActive ? 'active' : ''}" data-type="${dataType}" data-value="${value}" title="${title || ''}"><a><span>&nbsp;</span></a></li>`,
+	RenderTab: ({ name, isActive, dataType, value, title, disabled }) => `<li ${disabled ? 'disabled' : ''} class="${value} ${!disabled && isActive ? 'active' : ''}" data-type="${dataType}" data-value="${value}" title="${(title || '').replace(/"/g, '&quot;')}"><a><span>&nbsp;</span></a></li>`,
 
 
 	/**
